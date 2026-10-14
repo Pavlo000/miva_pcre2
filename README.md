@@ -45,6 +45,23 @@ Named groups:
 <MvEVAL EXPR="{ l.out:groups:host }">   <!-- b.com -->
 ```
 
+## Prebuilt binaries
+
+Drop-in builtins (PCRE2 statically linked) are in [`bin/`](bin/):
+
+| Platform | File |
+|----------|------|
+| macOS Intel (x86_64) | [`bin/darwin-x86_64/miva_pcre2.so`](bin/darwin-x86_64/miva_pcre2.so) |
+| macOS Apple Silicon | [`bin/darwin-arm64/miva_pcre2.so`](bin/darwin-arm64/miva_pcre2.so) |
+| Linux x86_64 | [`bin/linux-x86_64/miva_pcre2.so`](bin/linux-x86_64/miva_pcre2.so) |
+| Linux arm64 | [`bin/linux-arm64/miva_pcre2.so`](bin/linux-arm64/miva_pcre2.so) |
+
+Copy the matching file into your Empresa `builtins` directory (and into `mvc` builtins if you compile against it), e.g.:
+
+```bash
+cp bin/linux-x86_64/miva_pcre2.so /path/to/mivavm/lib/builtins/
+```
+
 ## Build & test
 
 Requires a local Miva VM (`mivavm`) and compiler (`mvc`). Defaults:

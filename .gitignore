@@ -1,12 +1,11 @@
-# Plugin build outputs
-/bin/
+# Local build intermediates
 /lib/
 *.o
 *.a
-*.so
 *.dylib
-*.dll
-*.exe
+
+# Dev helpers under bin/ (keep shipped plugin binaries)
+/bin/pcre2demo
 
 # Editor / OS
 .DS_Store

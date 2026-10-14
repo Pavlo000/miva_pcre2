@@ -29,13 +29,19 @@ COMMON_CFLAGS  := -fPIC -O2 -Wall -I$(INCDIR) -DPCRE2_STATIC
 # Per-arch static PCRE2 builds (cmake --build include/pcre2/build-darwin-*)
 PCRE2_BUILD_DARWIN_X86_64 := $(PCRE2_SRC)/build-darwin-x86_64
 PCRE2_BUILD_DARWIN_ARM64  := $(PCRE2_SRC)/build-darwin-arm64
+PCRE2_BUILD_LINUX_X86_64  := $(PCRE2_SRC)/build-linux-x86_64
+PCRE2_BUILD_LINUX_ARM64   := $(PCRE2_SRC)/build-linux-arm64
 PCRE2_LIB_DARWIN_X86_64   := $(PCRE2_BUILD_DARWIN_X86_64)/libpcre2-8.a
 PCRE2_LIB_DARWIN_ARM64    := $(PCRE2_BUILD_DARWIN_ARM64)/libpcre2-8.a
+PCRE2_LIB_LINUX_X86_64    := $(PCRE2_BUILD_LINUX_X86_64)/libpcre2-8.a
+PCRE2_LIB_LINUX_ARM64     := $(PCRE2_BUILD_LINUX_ARM64)/libpcre2-8.a
 PCRE2_INC_DARWIN_X86_64   := $(PCRE2_BUILD_DARWIN_X86_64)/interface
 PCRE2_INC_DARWIN_ARM64    := $(PCRE2_BUILD_DARWIN_ARM64)/interface
+PCRE2_INC_LINUX_X86_64    := $(PCRE2_BUILD_LINUX_X86_64)/interface
+PCRE2_INC_LINUX_ARM64     := $(PCRE2_BUILD_LINUX_ARM64)/interface
 
 .PHONY: all local darwin darwin-x86_64 darwin-arm64 linux linux-x86_64 linux-arm64 win64 \
-        pcre2-darwin-x86_64 pcre2-darwin-arm64 \
+        pcre2-darwin-x86_64 pcre2-darwin-arm64 pcre2-linux-x86_64 pcre2-linux-arm64 \
         install test clean help
 
 all: darwin-x86_64 darwin-arm64 linux-x86_64 linux-arm64 win64
@@ -79,6 +85,29 @@ $(PCRE2_LIB_DARWIN_ARM64):
 		-DPCRE2_BUILD_PCRE2GREP=OFF
 	@cmake --build $(PCRE2_BUILD_DARWIN_ARM64) -j
 
+pcre2-linux-x86_64: $(PCRE2_LIB_LINUX_X86_64)
+pcre2-linux-arm64:  $(PCRE2_LIB_LINUX_ARM64)
+
+$(PCRE2_LIB_LINUX_X86_64):
+	@docker run --rm --platform linux/amd64 \
+		-v "$(CURDIR):/src" -w /src $(LINUX_IMAGE) \
+		bash -c 'set -euo pipefail; \
+			apt-get update -qq && apt-get install -y -qq cmake >/dev/null; \
+			cmake -S $(PCRE2_SRC) -B $(PCRE2_BUILD_LINUX_X86_64) \
+				-DBUILD_SHARED_LIBS=OFF -DPCRE2_STATIC_PIC=ON \
+				-DPCRE2_BUILD_TESTS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF; \
+			cmake --build $(PCRE2_BUILD_LINUX_X86_64) -j"$$(nproc)"'
+
+$(PCRE2_LIB_LINUX_ARM64):
+	@docker run --rm --platform linux/arm64 \
+		-v "$(CURDIR):/src" -w /src $(LINUX_IMAGE) \
+		bash -c 'set -euo pipefail; \
+			apt-get update -qq && apt-get install -y -qq cmake >/dev/null; \
+			cmake -S $(PCRE2_SRC) -B $(PCRE2_BUILD_LINUX_ARM64) \
+				-DBUILD_SHARED_LIBS=OFF -DPCRE2_STATIC_PIC=ON \
+				-DPCRE2_BUILD_TESTS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF; \
+			cmake --build $(PCRE2_BUILD_LINUX_ARM64) -j"$$(nproc)"'
+
 # ---------------------------------------------------------------------------
 # macOS — Mach-O bundle (same filetype as stock Miva builtins)
 # ---------------------------------------------------------------------------
@@ -97,8 +126,7 @@ $(OUTDIR)/darwin-arm64/$(FILENAME).so: $(SRC) $(HDR) $(PCRE2_LIB_DARWIN_ARM64) |
 		-o $@ $(SRC) $(PCRE2_LIB_DARWIN_ARM64)
 
 # ---------------------------------------------------------------------------
-# Linux — ELF .so via Docker (gcc image)
-# Links against the system libpcre2 in the container for now.
+# Linux — ELF .so via Docker, statically linked with PCRE2 (drop-in ready)
 # ---------------------------------------------------------------------------
 
 linux: linux-x86_64 linux-arm64
@@ -106,17 +134,15 @@ linux: linux-x86_64 linux-arm64
 linux-x86_64: $(OUTDIR)/linux-x86_64/$(FILENAME).so
 linux-arm64:  $(OUTDIR)/linux-arm64/$(FILENAME).so
 
-$(OUTDIR)/linux-x86_64/$(FILENAME).so: $(SRC) $(HDR) | $(OUTDIR)/linux-x86_64
+$(OUTDIR)/linux-x86_64/$(FILENAME).so: $(SRC) $(HDR) $(PCRE2_LIB_LINUX_X86_64) | $(OUTDIR)/linux-x86_64
 	@docker run --rm --platform linux/amd64 \
 		-v "$(CURDIR):/src" -w /src $(LINUX_IMAGE) \
-		bash -c 'apt-get update -qq && apt-get install -y -qq libpcre2-dev >/dev/null && \
-		gcc $(COMMON_CFLAGS) -shared -o $@ $(SRC) -lpcre2-8'
+		gcc $(COMMON_CFLAGS) -I$(PCRE2_INC_LINUX_X86_64) -shared -o $@ $(SRC) $(PCRE2_LIB_LINUX_X86_64)
 
-$(OUTDIR)/linux-arm64/$(FILENAME).so: $(SRC) $(HDR) | $(OUTDIR)/linux-arm64
+$(OUTDIR)/linux-arm64/$(FILENAME).so: $(SRC) $(HDR) $(PCRE2_LIB_LINUX_ARM64) | $(OUTDIR)/linux-arm64
 	@docker run --rm --platform linux/arm64 \
 		-v "$(CURDIR):/src" -w /src $(LINUX_IMAGE) \
-		bash -c 'apt-get update -qq && apt-get install -y -qq libpcre2-dev >/dev/null && \
-		gcc $(COMMON_CFLAGS) -shared -o $@ $(SRC) -lpcre2-8'
+		gcc $(COMMON_CFLAGS) -I$(PCRE2_INC_LINUX_ARM64) -shared -o $@ $(SRC) $(PCRE2_LIB_LINUX_ARM64)
 
 # ---------------------------------------------------------------------------
 # Windows — DLL via dockcross (pulled on first use)
