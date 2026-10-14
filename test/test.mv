@@ -1,0 +1,118 @@
+<MvCOMMENT>
+|
+|  miva_pcre2 pattern tests
+|  Run: make test
+|
+</MvCOMMENT>
+
+<MvEVAL EXPR="{ '=== basic match / options ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^Hello', 'Hello World', '', l.out) }">
+<MvEVAL EXPR="{ 'basic anchor expect 1: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^hello', 'Hello World', 'i', l.out) }">
+<MvEVAL EXPR="{ 'caseless expect 1: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^hello', 'Hello World', '', l.out) }">
+<MvEVAL EXPR="{ 'case-sensitive miss expect 0: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('World', 'Hello World', '', l.out) }">
+<MvEVAL EXPR="{ 'mid-string offset expect 7: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvEVAL EXPR="{ '=== numbered captures ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(\\w+)\\s+(\\w+)', 'Hello World', '', l.out) }">
+<MvEVAL EXPR="{ 'num groups: r=' $ l.r $ ' full=' $ l.out:matches[1][1] $ ' g1=' $ l.out:matches[1][2] $ ' g2=' $ l.out:matches[1][3] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(\\d{3})-(\\d{3})-(\\d{4})', 'Call 555-123-4567 now', '', l.out) }">
+<MvEVAL EXPR="{ 'phone: r=' $ l.r $ ' full=' $ l.out:matches[1][1] $ ' a=' $ l.out:matches[1][2] $ ' b=' $ l.out:matches[1][3] $ ' c=' $ l.out:matches[1][4] }"><br>
+
+<MvEVAL EXPR="{ '=== named captures (single) ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<greeting>\\w+)\\s+(?<place>\\w+)', 'Hello World', '', l.out) }">
+<MvEVAL EXPR="{ 'named pair: r=' $ l.r $ ' full=' $ l.out:matches[1][1] $ ' greeting=' $ l.out:groups:greeting $ ' place=' $ l.out:groups:place }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?P<user>[a-z0-9_]+)@(?P<domain>[a-z.]+)', 'mail me at alice_1@example.com please', 'i', l.out) }">
+<MvEVAL EXPR="{ 'email Python-style names: r=' $ l.r $ ' user=' $ l.out:groups:user $ ' domain=' $ l.out:groups:domain $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})', 'Date: 2026-10-13', '', l.out) }">
+<MvEVAL EXPR="{ 'date named: r=' $ l.r $ ' y=' $ l.out:groups:year $ ' m=' $ l.out:groups:month $ ' d=' $ l.out:groups:day }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<area>\\d{3})-(?<exchange>\\d{3})-(?<line>\\d{4})', '555-123-4567', '', l.out) }">
+<MvEVAL EXPR="{ 'named+numbered: area=' $ l.out:groups:area $ ' g1=' $ l.out:matches[1][2] $ ' line=' $ l.out:groups:line $ ' g3=' $ l.out:matches[1][4] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<word>\\w+)\\s+\\k<word>', 'hello hello', '', l.out) }">
+<MvEVAL EXPR="{ 'backref named: r=' $ l.r $ ' word=' $ l.out:groups:word $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<word>\\w+)\\s+\\k<word>', 'hello world', '', l.out) }">
+<MvEVAL EXPR="{ 'backref miss expect 0: ' $ l.r }"><br>
+
+<MvEVAL EXPR="{ '=== named captures (nested / optional) ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<outer>(?<inner>[a-z]+)-(?<num>\\d+))', 'item-42', '', l.out) }">
+<MvEVAL EXPR="{ 'nested names: outer=' $ l.out:groups:outer $ ' inner=' $ l.out:groups:inner $ ' num=' $ l.out:groups:num }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<code>[A-Z]+)-(?<id>\\d+)(?:-(?<rev>[a-z]+))?', 'SKU-99', '', l.out) }">
+<MvEVAL EXPR="{ 'optional absent: code=' $ l.out:groups:code $ ' id=' $ l.out:groups:id $ ' rev=[' $ l.out:groups:rev $ ']' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<code>[A-Z]+)-(?<id>\\d+)(?:-(?<rev>[a-z]+))?', 'SKU-99-beta', '', l.out) }">
+<MvEVAL EXPR="{ 'optional present: code=' $ l.out:groups:code $ ' id=' $ l.out:groups:id $ ' rev=' $ l.out:groups:rev }"><br>
+
+<MvEVAL EXPR="{ '=== global (g) ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('\\w+', 'one two three', 'g', l.out) }">
+<MvEVAL EXPR="{ 'g words: r=' $ l.r $ ' m1=' $ l.out:matches[1][1] $ ' m2=' $ l.out:matches[2][1] $ ' m3=' $ l.out:matches[3][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<tok>\\w+)', 'alpha beta gamma', 'g', l.out) }">
+<MvEVAL EXPR="{ 'g named (first match only in groups): r=' $ l.r $ ' m1=' $ l.out:matches[1][1] $ ' m2=' $ l.out:matches[2][1] $ ' m3=' $ l.out:matches[3][1] $ ' tok=' $ l.out:groups:tok }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<key>\\w+)=(?<val>\\w+)', 'a=1 b=2 c=3', 'g', l.out) }">
+<MvEVAL EXPR="{ 'g kv: m1=' $ l.out:matches[1][1] $ ' m1k=' $ l.out:matches[1][2] $ ' m1v=' $ l.out:matches[1][3] $ ' m2=' $ l.out:matches[2][1] $ ' first_key=' $ l.out:groups:key $ ' first_val=' $ l.out:groups:val }"><br>
+
+<MvEVAL EXPR="{ '=== misc patterns ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^$', '', '', l.out) }">
+<MvEVAL EXPR="{ 'empty string ^$ expect 1: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('\\d+', 'no-digits-here', '', l.out) }">
+<MvEVAL EXPR="{ 'no match expect 0: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<hex>#[0-9a-f]{6})', 'color #a1b2c3 end', 'i', l.out) }">
+<MvEVAL EXPR="{ 'hex color: r=' $ l.r $ ' hex=' $ l.out:groups:hex }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<proto>https?)://(?<host>[^/]+)(?<path>/.*)?', 'https://example.com/path?x=1', '', l.out) }">
+<MvEVAL EXPR="{ 'url: proto=' $ l.out:groups:proto $ ' host=' $ l.out:groups:host $ ' path=' $ l.out:groups:path }"><br>
+
+<MvEVAL EXPR="{ '=== errors ===' }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(', 'x', '', l.out) }">
+<MvEVAL EXPR="{ 'bad pattern: r=' $ l.r $ ' err=' $ pcre2_last_error() }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<bad', 'x', '', l.out) }">
+<MvEVAL EXPR="{ 'bad named: r=' $ l.r $ ' err=' $ pcre2_last_error() }"><br>
+
+<MvEVAL EXPR="{ '=== done ===' }"><br>

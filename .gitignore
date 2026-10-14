@@ -1,0 +1,20 @@
+# Plugin build outputs
+/bin/
+/lib/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# PCRE2 local builds (also covered by include/pcre2/.gitignore)
+include/pcre2/build/
+include/pcre2/build-*/
