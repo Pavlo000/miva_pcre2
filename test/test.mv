@@ -87,6 +87,49 @@
 <MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<key>\\w+)=(?<val>\\w+)', 'a=1 b=2 c=3', 'g', l.out) }">
 <MvEVAL EXPR="{ 'g kv: m1=' $ l.out:matches[1][1] $ ' m1k=' $ l.out:matches[1][2] $ ' m1v=' $ l.out:matches[1][3] $ ' m2=' $ l.out:matches[2][1] $ ' first_key=' $ l.out:groups:key $ ' first_val=' $ l.out:groups:val }"><br>
 
+<MvEVAL EXPR="{ '=== options m / s / x / u ===' }"><br>
+
+<MvASSIGN NAME="l.subj" VALUE="{ 'foo' $ asciichar(10) $ 'bar' }">
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^bar', l.subj, '', l.out) }">
+<MvEVAL EXPR="{ 'multiline off expect 0: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^bar', l.subj, 'm', l.out) }">
+<MvEVAL EXPR="{ 'multiline on expect >0: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.subj" VALUE="{ 'a' $ asciichar(10) $ 'b' }">
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('a.b', l.subj, '', l.out) }">
+<MvEVAL EXPR="{ 'dotall off expect 0: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('a.b', l.subj, 's', l.out) }">
+<MvEVAL EXPR="{ 'dotall on expect 1: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('a b', 'ab', '', l.out) }">
+<MvEVAL EXPR="{ 'extended off expect 0: ' $ l.r }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('a b', 'ab', 'x', l.out) }">
+<MvEVAL EXPR="{ 'extended on expect 1: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvCOMMENT> UTF-8 for U+00E9 (e acute) is C3 A9 </MvCOMMENT>
+<MvASSIGN NAME="l.cafe" VALUE="{ 'caf' $ asciichar(195) $ asciichar(169) }">
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('\\w+', l.cafe, '', l.out) }">
+<MvEVAL EXPR="{ 'unicode off ascii \\w expect caf: r=' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('\\w+', l.cafe, 'u', l.out) }">
+<MvEVAL EXPR="{ 'unicode on \\w expect full cafe: r=' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
+<MvASSIGN NAME="l.subj" VALUE="{ 'Foo' $ asciichar(10) $ 'bar' }">
+<MvASSIGN NAME="l.out" VALUE="">
+<MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('^foo.*bar', l.subj, 'ims', l.out) }">
+<MvEVAL EXPR="{ 'combined ims expect 1: ' $ l.r $ ' full=' $ l.out:matches[1][1] }"><br>
+
 <MvEVAL EXPR="{ '=== misc patterns ===' }"><br>
 
 <MvASSIGN NAME="l.out" VALUE="">
@@ -104,6 +147,7 @@
 <MvASSIGN NAME="l.out" VALUE="">
 <MvASSIGN NAME="l.r" VALUE="{ pcre2_regexp('(?<proto>https?)://(?<host>[^/]+)(?<path>/.*)?', 'https://example.com/path?x=1', '', l.out) }">
 <MvEVAL EXPR="{ 'url: proto=' $ l.out:groups:proto $ ' host=' $ l.out:groups:host $ ' path=' $ l.out:groups:path }"><br>
+
 
 <MvEVAL EXPR="{ '=== errors ===' }"><br>
 

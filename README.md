@@ -15,6 +15,10 @@ PCRE2 bindings for Miva Merchant / Empresa as an external builtin library.
 |------|---------|
 | `i` | Case-insensitive |
 | `g` | Find all matches |
+| `m` | Multiline (`^` / `$` match line boundaries) |
+| `s` | Dotall (`.` matches newlines) |
+| `x` | Extended (ignore unescaped whitespace / `#` comments in pattern) |
+| `u` | UTF-8 subject/pattern + Unicode character properties |
 
 ### Output structure
 

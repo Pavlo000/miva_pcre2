@@ -32,6 +32,10 @@ MV_EL_FunctionParameter miva_pcre2_last_error_parameters[] = {
 * Options:
 *   i - case-insensitive
 *   g - find all matches
+*   m - multiline (^/$ match line boundaries)
+*   s - dotall (. matches newlines)
+*   x - extended (ignore unescaped whitespace / # comments)
+*   u - UTF-8 + Unicode character properties
 *
 * On success, output is populated as:
 *   output:matches[n][c]  - capture c (1-based; 1 = full match) of match n
@@ -138,6 +142,18 @@ void miva_pcre2_regexp(mvProgram program, mvVariableHash parameters, mvVariable 
         break;
       case 'i':
         compile_options |= PCRE2_CASELESS;
+        break;
+      case 's':
+        compile_options |= PCRE2_DOTALL;
+        break;
+      case 'm':
+        compile_options |= PCRE2_MULTILINE;
+        break;
+      case 'x':
+        compile_options |= PCRE2_EXTENDED;
+        break;
+      case 'u':
+        compile_options |= PCRE2_UTF | PCRE2_UCP;
         break;
     }
   }
